@@ -44,7 +44,7 @@ skater_stats$TOI = skater_stats$ATOI*skater_stats$GP     # setting TOI from ATOI
 # skater_stats[, TOI := as.numeric(TOI)]                 in case time format is not needed
 
 
-# Changing NA to 0 where that makes sense (basically everywhere except FO_perc)
+# Changing between NA and 0 to make sense (percentages to NA if there is division with 0, and FOwin/loss to NA if both are 0)
 skater_stats$G[is.na(skater_stats$G)] <- 0
 skater_stats$A[is.na(skater_stats$A)] <- 0
 skater_stats$PTS[is.na(skater_stats$PTS)] <- 0
@@ -58,10 +58,11 @@ skater_stats$EVA[is.na(skater_stats$EVA)] <- 0
 skater_stats$PPA[is.na(skater_stats$PPA)] <- 0
 skater_stats$SHA[is.na(skater_stats$SHA)] <- 0
 skater_stats$S[is.na(skater_stats$S)] <- 0
-skater_stats$S_perc[is.na(skater_stats$S_perc)] <- 0
+skater_stats$S_perc[skater_stats$S == 0] <- NA
 skater_stats$BLK[is.na(skater_stats$BLK)] <- 0
 skater_stats$HIT[is.na(skater_stats$HIT)] <- 0
-skater_stats$FOwin[is.na(skater_stats$FOwin)] <- 0
-skater_stats$FOloss[is.na(skater_stats$FOloss)] <- 0
+skater_stats$FOwin[is.na(skater_stats$FO_perc)] <- NA
+skater_stats$FOloss[is.na(skater_stats$FO_perc)] <- NA
 
 summary(skater_stats)
+
