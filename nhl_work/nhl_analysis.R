@@ -15,6 +15,7 @@ summary(skater_stats)
 skater_stats$V1 <- NULL
 
 ### need to remove two person with AGE NA!!!
+### possibly need to rework conversion and 0/NA change into function
 
 # Rename columnes: "+/-", "S%", "FO%"
 colnames(skater_stats)[colnames(skater_stats) == "+/-"] <- "PlusMinus"
@@ -70,5 +71,5 @@ skater_stats$FOloss[is.na(skater_stats$FO_perc)] <- NA
 summary(skater_stats)
 
 # Plots
-ggplot(skater_stats, aes(TOI, PTS)) + geom_point()
+ggplot(skater_stats, aes(TOI, PTS)) + geom_point() + scale_x_chron()
 ggplot(skater_stats, aes(FOwin + FOloss, FO_perc)) + geom_point()
