@@ -1,0 +1,88 @@
+---
+title: Measuring effect through experimenting
+author: "András Bérczi"
+date: "October 9, 2019"
+output: html_document
+# runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = '..')
+```
+
+```{r}
+suppressPackageStartupMessages(library(data.table))
+suppressPackageStartupMessages(library(ggplot2))
+suppressPackageStartupMessages(library(magrittr))
+suppressPackageStartupMessages(library(lubridate))
+```
+
+# 1. Calculate the Minimum Detectable Effect for a sample of 1000 contacts, when the base rate is 10%. Use the `calculateMinimumDetectableEffect` function!
+
+```{r function to calculate the Minimum Detectable Effect}
+calculateMinimumDetectableEffect <- function(p1, n, prop_of_treatment = 0.5, alpha = 0.05, beta = 0.2) {
+    M <- qt(1-alpha/2, n - 1) + qt(1-beta, n - 1)
+    variance <- p1 * (1 - p1)
+    weight <- prop_of_treatment * (1 - prop_of_treatment) * n
+    M * sqrt(variance / weight)
+}
+# solution:
+calculateMinimumDetectableEffect(0.1, 1000)
+```
+
+# 2. Calculate the effect for the whole period of the [provided example experiment](./experiment_result.csv)
+
+```{r}
+data <- fread("eltecon-ds-class/data/experiment_result.csv")
+
+dt <- data[, .(num_open = sum(did_open), num_send = .N), by = group] %>%
+  .[, .(group, open_rate = num_open/num_send)]
+
+dt[group == "treatment", open_rate] / dt[group == "control", open_rate]
+
+# own solution
+
+# treatment_opened = count(data, (group == "treatment" & did_open == 1))
+# treatment_total = count(data, group == "treatment")
+# control_opened = count(data, (group == "control" & did_open == 1))
+# control_total = count(data, group == "control")
+# uplift = round((treatment_opened[[2]][[2]]/treatment_total[[2]][[2]])/
+#   (control_opened[[2]][[2]]/control_total[[2]][[2]])-1, digits = 2)
+```
+
+# 3. Plot the results
+
+```{r}
+ggplot(dt, aes(x = group, y = open_rate)) + geom_col() +
+  labs(title = "Open rate for all period") + xlab("Open rate")
+```
+
+# 4. Calculate the effect week-by-week
+# 5. Plot the results
+
+```{r}
+data[, send_week := floor_date(as.Date(send_date), unit = "week", week_start = 1)]
+dt_week <- data[, .(num_open = sum(did_open), num_send = .N), by = .(group, send_week)] %>%
+  .[, .(group, send_week, open_rate = num_open / num_send)]
+
+effect_dt <- dcast(dt_week, send_week ~ group) %>%
+  .[, .(send_week, uplift = treatment / control)]
+
+ggplot(effect_dt, aes(x = send_week, y = uplift)) + geom_line()
+
+# own solution
+
+# dt2 <- data[, no_week := (((as.numeric(rownames(data)) - 1) %/% 7) + 1) %% 8]
+# dt2 <- dt2[no_week == 0, no_week := 8]
+# 
+# # copied from here
+# dt2_week <- data[, .(num_open = sum(did_open), num_send = .N), by = .(group, no_week)] %>%
+#   .[, .(group, no_week, open_rate = num_open / num_send)]
+# effect_dt2 <- dcast(dt2_week, no_week ~ group) %>%
+#   .[, .(no_week, uplift = treatment / control)]
+# ggplot(effect_dt2, aes(x = no_week, y = uplift)) + geom_line()
+
+```
+
+# 6. How would you plot uncertainty? Try to do it for both plots!
