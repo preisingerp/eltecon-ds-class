@@ -12,7 +12,7 @@ student[, .N, age][order(age)]
 student <- student[beer != 2.11212e+11 | is.na(beer)]
 
 convert_meter_height_to_cm <- function(student) {
-  studnet[height >= 1.3 & height <= 2.1, heights:= height * 100]
+  student[height >= 1.3 & height <= 2.1, heights:= height * 100]
 }
 
 clear_unreliable_height <- function(student) {
