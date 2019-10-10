@@ -1,0 +1,49 @@
+---
+title: "homework 2"
+author: "Preisinger Péter"
+date: '2019 10 10 '
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, echo = FALSE}
+suppressPackageStartupMessages(library(data.table))
+suppressPackageStartupMessages(library(ggplot2))
+suppressPackageStartupMessages(library(magrittr))
+```
+
+Feladat leírás: 
+Az órai adatból kiindulva (crime.csv), csináljátok végig a következő lépéseket:
+
+1. az adattáblában keressétek meg, hogy melyik az 5 leggyakoribb "OFFENSE_CODE_GROUP", csak azokra a sorokra leszűrve, ahol a "SHOOTING" értéke "Y".
+
+2. az eredeti adattáblát szűrjétek le azokra a sorokra, ahol a "SHOOTING" értéke "Y", ÉS az "OFFENSE_CODE_GROUP" oszlop értéke az 1.-es pontban kiszámolt 5 leggyakoribb valamelyike.
+
+3. Vizualizáljátok ezen bűnesetek gyakoriságát, órák szerint, és valamilyen módon (szín, facet, stb.) elkülönítve egymástól az 5 "OFFENSE_CODE_GROUP"-ot.
+
+
+A markdown fájlban a kód mellett írjatok pár szót arról is, hogy milyen mintázatot fedeztek fel az adatban, és annak milyen lehetséges magyarázata van.
+
+```{r}
+# sorting data
+crime_data <- fread("data/crime.csv")
+shooting <- crime_data[SHOOTING == "Y"]
+top5 <- names(sort(table(shooting$OFFENSE_CODE_GROUP), decreasing=TRUE)[1:5])
+shooting_sorted <- shooting[OFFENSE_CODE_GROUP %in% top5]
+cols <- c("HOUR", "OFFENSE_CODE_GROUP")
+to_plot <- shooting_sorted[, .N, cols]
+
+# creating plots
+ggplot(to_plot, aes(x = HOUR, y = N)) + 
+  geom_col(aes(fill = OFFENSE_CODE_GROUP))+
+  labs(title = "Frequency of most common crimes", x = "hour", y = "Number of crimes")
+
+ggplot(to_plot, aes(x = HOUR, y = N)) +
+  geom_col()+
+  facet_wrap(facets = "OFFENSE_CODE_GROUP", nrow = 3, ncol = 2, scales = "free") +
+  labs(title = "Top 5 most common crimes", x = "hour", y = "Number of crimes")
+```
+A két ábrán megfigyelhető, hogy a bűnesetek - típustól függetlenül - jóval gyakoribbak a hajnali és esti órákban. Ennek oka lehet, hogy a fenti bűncselekményeket könnyebb észrevétlenül elkövetni sötétben. Ebből következően a rajtakapások/bejelentések is jóval gyakoribbak a nap sötét szakaszában. (Ezen kívül, ami érdekes lehet még, az a 16 órás kiugró érték. Ennek oka lehet, hogy ez van közvetlen a munkaidő lejárta után.)
