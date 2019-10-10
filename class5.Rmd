@@ -8,7 +8,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-knitr::opts_knit$set(root.dir = '..')
+# knitr::opts_knit$set(root.dir = '..')
 ```
 
 ```{r}
@@ -34,7 +34,7 @@ calculateMinimumDetectableEffect(0.1, 1000)
 # 2. Calculate the effect for the whole period of the [provided example experiment](./experiment_result.csv)
 
 ```{r}
-data <- fread("eltecon-ds-class/data/experiment_result.csv")
+data <- fread("data/experiment_result.csv")
 
 dt <- data[, .(num_open = sum(did_open), num_send = .N), by = group] %>%
   .[, .(group, open_rate = num_open/num_send)]
