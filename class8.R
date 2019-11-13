@@ -17,7 +17,7 @@ cv_split <- split(sample(1:n), 1:fold)
 formula <- as.formula("y ~ x + I(x^2)")
 cv_errors <- imap(cv_split, ~{
   model <- lm(formula = formula, data = data[-.x,])
-  p <- predict(model, data_new = data[.x,])
+  p <- predict(model, newdata = data[.x,])
   mean((p - data[.x, y])^2)
 })
 
