@@ -54,3 +54,4 @@ for (model in models) {
   data_test <- data_test[, eval(colname):=predict(model_fit, newdata = data_test)]
   mse_test[[colname]] <-  MSE(data_test[, ln_shares], data_test[, get(colname)])
 }
+
